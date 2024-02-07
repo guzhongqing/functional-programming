@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 public class Lambda {
     public static void main(String[] args) {
-        // 方法引用
+        // 静态方法引用
         Integer integer = typeConverter(Integer::valueOf);
 //        等价于 typeConverter((str) -> Integer.valueOf(str));
         System.out.println(integer);

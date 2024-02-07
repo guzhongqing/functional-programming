@@ -10,7 +10,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode// 用于后期的去重使用
 public class Author {
     // id
     private Long id;
