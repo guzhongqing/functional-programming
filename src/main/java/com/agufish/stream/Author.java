@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Author {
+public class Author implements Comparable<Author> {
     // id
     private Long id;
     // 姓名
@@ -21,4 +21,9 @@ public class Author {
     private String intro;
     // 作品
     private List<Book> books;
+
+    @Override
+    public int compareTo(Author o) {
+        return o.age - this.age; // 降序
+    }
 }

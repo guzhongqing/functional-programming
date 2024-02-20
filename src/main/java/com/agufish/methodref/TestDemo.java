@@ -30,7 +30,6 @@ public class TestDemo {
 //            }
 //        });
         System.out.println(car2);
-
     }
 
     // 静态方法引用

@@ -59,15 +59,67 @@ public class StreamDemo {
 
         // 打印所有作家的名字
         genAuthors().stream()
-                // 方法引用
+                // 静态方法引用
                 .map(author -> TestClass.get(author))
 //                .forEach(System.out::println);
                 .forEach((name) -> System.out.println(name));
     }
 
 
+    public static void testDistinct() {
+        // 打印所有作家的名字,名字不能重复
+        genAuthors().stream()
+                // 静态方法引用
+                .map(Author::getName)
+                .distinct()
+                .forEach(System.out::println);
+    }
+
+    public static void testSorted() {
+        // 对流中的元素按照年龄降序排序,不能有重复元素
+        genAuthors().stream()
+                .distinct()
+                .sorted() // 使用sorted空参需要实体类实现Comparable接口
+                .forEach(System.out::println);
+
+        genAuthors().stream()
+                .distinct()
+                .sorted((o1, o2) -> o2.getAge() - o1.getAge()) // 实现Comparator降序
+                .forEach(System.out::println);
+    }
+
+    public static void testLimit() {
+        // 对流中的元素按照年龄降序排序,不能有重复元素,最后打印前2个作家的名字
+        StreamDemo.genAuthors().stream()
+                .distinct()
+                .sorted((o1, o2) -> o2.getAge() - o1.getAge())
+                .limit(2)
+                .forEach((author) -> System.out.println(author.getName()));
+    }
+
+    public static void testSkip() {
+        // 打印除了年龄最大的作家之外其他作家,要求不能重复,并且按照年龄降序排序
+        StreamDemo.genAuthors().stream()
+                .distinct()
+                .sorted((o1, o2) -> o2.getAge() - o1.getAge())
+                .skip(1)
+                .forEach((author) -> System.out.println(author.getName()));
+    }
+
+    public static void testFlatMap() {
+        // 打印所有书籍的名字.注意:书籍名字不能重复
+        genAuthors().stream()
+                .flatMap((author) -> author.getBooks().stream())
+                .map(Book::getName)
+                .distinct()
+                .forEach(System.out::println);
+        // 打印现有数据的所有分类,对分类进行去重,不能出现格式:哲学,爱情
+
+    }
+
+
     public static void main(String[] args) {
-        test6();
+        testFlatMap();
 
     }
 
