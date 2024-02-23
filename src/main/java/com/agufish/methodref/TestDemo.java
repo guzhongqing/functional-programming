@@ -35,14 +35,6 @@ public class TestDemo {
     // 静态方法引用
     public static void testStatic() {
         List<Car> cars = Collections.singletonList(new Car());
-        cars.forEach(System.out::println);
-//        cars.forEach(car -> System.out.println(car));
-//        cars.forEach(new Consumer<Car>() {
-//            @Override
-//            public void accept(Car car) {
-//                System.out.println(car);
-//            }
-//        });
         cars.forEach(Car::collide);
 //        cars.forEach(car -> Car.collide(car));
 //        cars.forEach(new Consumer<Car>() {
@@ -78,6 +70,16 @@ public class TestDemo {
 //            }
 //        });
 //        System.out.println(sb.toString());
+
+        // 这个是对象的实例方法引用,println是PrintStream的实例方法,不是静态方法
+        cars.forEach(System.out::println);
+//        cars.forEach(car -> System.out.println(car));
+//        cars.forEach(new Consumer<Car>() {
+//            @Override
+//            public void accept(Car car) {
+//                System.out.println(car);
+//            }
+//        });
 
         Runnable runnable = car::getName;
 //        Runnable runnable = () -> car.getName();

@@ -1,6 +1,10 @@
 package com.agufish.stream;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StreamDemo {
@@ -107,20 +111,169 @@ public class StreamDemo {
     }
 
     public static void testFlatMap() {
-        // 打印所有书籍的名字.注意:书籍名字不能重复
+        // 案例一: 打印所有书籍的名字.注意:书籍名字不能重复
         genAuthors().stream()
                 .flatMap((author) -> author.getBooks().stream())
                 .map(Book::getName)
                 .distinct()
                 .forEach(System.out::println);
-        // 打印现有数据的所有分类,对分类进行去重,不能出现格式:哲学,爱情
 
+        // 案例二: 打印现有数据的所有分类,对分类进行去重,不能出现格式:哲学,爱情
+        genAuthors().stream()
+                .flatMap((author) -> author.getBooks().stream())
+                // 对书籍对象去重
+                .distinct()
+                // 分割字符串,将字符串分割成数组,然后转换成流,变成flatMap的流,放入同一个流中
+                .flatMap((book) -> Arrays.stream(book.getCategory().split(",")))
+                // 对分类去重
+                .distinct()
+                .forEach(System.out::println);
+    }
+
+    public static void testForEach() {
+        // 打印所有作家的名字
+        genAuthors().stream()
+                .map(Author::getName)
+                .distinct()
+                .forEach(System.out::println);
+    }
+
+    public static void testCount() {
+        // 打印书籍的数量
+        long count = genAuthors().stream()
+                .distinct()
+                .flatMap((author) -> author.getBooks().stream())
+                .distinct()
+                .count();
+        System.out.println(count);
+    }
+
+    public static void testMaxMin() {
+        // 分别获取作家书籍的最高分和最低分
+        Optional<Integer> max = genAuthors().stream()
+                .flatMap((author) -> author.getBooks().stream())
+                .map(Book::getScore)
+                // max寻找最后的元素,从小到大排序,最前面的就是最大的
+                .max((score1, score2) -> score1 - score2);
+//                .max(Comparator.comparingInt(score -> score));
+        System.out.println(max.get());
+
+        Optional<Integer> min = genAuthors().stream()
+                .flatMap((author) -> author.getBooks().stream())
+                .map(Book::getScore)
+                // min寻找最前的元素,从小到大排序,最前面的就是最小的
+                .min((score1, score2) -> score1 - score2);
+//                .max(Comparator.comparingInt(score -> score));
+        System.out.println(min.get());
+    }
+
+
+    public static void testCollect() {
+        // 获取一个存放所有作家名字的list集合
+        List<String> list = genAuthors().stream()
+                .map(Author::getName)
+                // Collectors.toList()使用的是ArrayList实现
+                .collect(Collectors.toList());
+        System.out.println(list);
+
+        // 获取一个所有书名的集合
+        Set<String> set = genAuthors().stream()
+                .flatMap((author) -> author.getBooks().stream())
+                .map(Book::getName)
+                // set集合自动去重,Collectors.toSet()使用的是HashSet实现
+                .collect(Collectors.toSet());
+        System.out.println(set);
+
+        // 获取一个Map集合,map的key为作家的名字,value该作家的List<Book>
+        // Collectors.toMap()使用的是HashMap实现
+        //                .collect(Collectors.toMap(Author::getName, Author::getBooks));
+        Map<String, List<Book>> map = genAuthors().stream()
+                .distinct()
+                // Collectors.toMap()使用的是HashMap实现
+//                .collect(Collectors.toMap(Author::getName, Author::getBooks));
+                .collect(Collectors.toMap(
+                        // 定义获取key的方法,Author为当前流中的元素类型,String为key的类型,注意key不能重复
+                        new Function<Author, String>() {
+                            @Override
+                            public String apply(Author author) {
+                                return author.getName();
+                            }
+                        },
+                        // 定义获取value的方法,Author为当前流中的元素类型,List<Book>为value的类型
+                        new Function<Author, List<Book>>() {
+                            @Override
+                            public List<Book> apply(Author author) {
+                                return author.getBooks();
+                            }
+                        }));
+        System.out.println(map);
+    }
+
+    public static void testAnyMatch() {
+        // 判断是否有作家的年龄大于29
+        boolean b = genAuthors().stream()
+                .anyMatch(author -> author.getAge() > 29);
+        System.out.println(b);
+    }
+
+    public static void testAllMatch() {
+        // 判断所有作家的都是成年人
+        boolean b = genAuthors().stream()
+                .allMatch(author -> author.getAge() >= 18);
+        System.out.println(b);
+    }
+
+    public static void testFindAny() {
+        // 获取任意一个年龄大于18的,如果存在输出他的名字
+        Optional<Author> any = genAuthors().stream()
+                .filter(author -> author.getAge() > 18)
+                .findAny();
+        any.ifPresent(author -> System.out.println(author.getName()));
+    }
+
+    public static void testFindFirst() {
+        // 获取年龄最小的作家,输出他的名字
+        Optional<Author> first = genAuthors().stream()
+                .sorted((o1, o2) -> o1.getAge() - o2.getAge())
+                .findFirst();
+        first.ifPresent(author -> System.out.println(author.getName()));
+    }
+
+    public static void testReduce() {
+        // 获取所有作家的年龄之和
+        Integer result = genAuthors().stream()
+                .distinct()
+                .map(Author::getAge)
+//                .reduce(0, Integer::sum);
+//                .reduce(0, (age1, age2) -> Integer.sum(age1, age2));
+                // 两个参数,reduce返回类型和identity的类型一致
+                .reduce(0, new BinaryOperator<Integer>() {
+                    @Override
+                    public Integer apply(Integer age1, Integer age2) {
+                        return Integer.sum(age1, age2);
+                    }
+                });
+        // 0 + 33 + 15 + 14
+        System.out.println(result);
+
+        // 求所有作者年龄最大的值
+        Optional<Integer> max = genAuthors().stream()
+                .map(Author::getAge)
+//                .reduce(Integer::max);
+//                .reduce((age1, age2) -> Integer.max(age1, age2));
+                // 一个参数,reduce返回Optional类型
+                .reduce(new BinaryOperator<Integer>() {
+                    @Override
+                    public Integer apply(Integer age1, Integer age2) {
+                        return Integer.max(age1, age2);
+                    }
+                });
+        max.ifPresent(System.out::println);
     }
 
 
     public static void main(String[] args) {
-        testFlatMap();
-
+        testReduce();
     }
 
     private static List<Author> genAuthors() {
