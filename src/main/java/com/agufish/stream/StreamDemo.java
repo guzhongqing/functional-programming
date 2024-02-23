@@ -271,9 +271,20 @@ public class StreamDemo {
         max.ifPresent(System.out::println);
     }
 
+    public static void test() {
+        List<Author> authorList = genAuthors();
+        System.out.println(authorList);
+        authorList.stream()
+                // peek方法可以对流中的元素进行中间操作,但是不会改变流中的元素
+                .peek(author -> author.setAge(100))
+                .map(Author::getAge)
+                .forEach(System.out::println);
+        System.out.println(authorList);
+    }
+
 
     public static void main(String[] args) {
-        testReduce();
+        test();
     }
 
     private static List<Author> genAuthors() {
