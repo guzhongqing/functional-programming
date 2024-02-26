@@ -282,9 +282,31 @@ public class StreamDemo {
         System.out.println(authorList);
     }
 
+    public static void testParallel() {
+        // 使用集合的parallelStream方法,创建并行流
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        list.parallelStream()
+                .peek(integer -> System.out.println(Thread.currentThread().getName() + " peek: " + integer))
+                .reduce(Integer::sum)
+                .ifPresent(System.out::println);
+
+        //
+        Stream<Integer> integerStream = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
+//        integerStream
+//                .peek(integer -> System.out.println(Thread.currentThread().getName() + " peek: " + integer))
+//                .reduce(Integer::sum)
+//                .ifPresent(System.out::println);
+
+        // 使用流的parallel方法,创建并行流,并行流会使用多个线程,并行流的中间操作是无序的
+        integerStream.parallel()
+                .peek(integer -> System.out.println(Thread.currentThread().getName() + " peek: " + integer))
+                .reduce(Integer::sum)
+                .ifPresent(System.out::println);
+    }
+
 
     public static void main(String[] args) {
-        test();
+        testParallel();
     }
 
     private static List<Author> genAuthors() {
