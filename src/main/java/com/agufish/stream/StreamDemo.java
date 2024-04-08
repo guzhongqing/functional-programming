@@ -2,7 +2,6 @@ package com.agufish.stream;
 
 import java.util.*;
 import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -304,9 +303,31 @@ public class StreamDemo {
                 .ifPresent(System.out::println);
     }
 
+    public static void testGroupingBy() {
+        List<Person> peopleList = Arrays.asList(
+                new Person("gzq", "男", 21),
+                new Person("zhang", "女", 22),
+                new Person("li", "男", 26),
+                new Person("wang", "女", 29),
+                new Person("zhao", "男", 30));
+
+        // age大于25为ture，反之为false
+        Map<Boolean, List<Person>> booleanKeyMap = peopleList
+                .stream()
+                .collect(Collectors.groupingBy(person -> person.age > 25));
+
+        System.out.println(booleanKeyMap);
+
+        // 按照性别分类，"男"，"女"为key
+        Map<String, List<Person>> StringKeyMap = peopleList
+                .stream()
+                .collect(Collectors.groupingBy(Person::getGender));
+
+        System.out.println(StringKeyMap);
+    }
 
     public static void main(String[] args) {
-        testParallel();
+        testGroupingBy();
     }
 
     private static List<Author> genAuthors() {
